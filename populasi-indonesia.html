@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Populasi Indonesia 2025</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      font-family: 'Source Sans 3', sans-serif;
+      color: #e8e0d0;
+    }
+
+    .wrapper {
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: #f5f0e8;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: #888;
+      margin: 0;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      max-width: 860px;
+      margin: 0 auto 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .controls-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #555;
+      margin-right: 0.3rem;
+    }
+
+    .sort-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.9rem;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      border: 1px solid #2e2e2e;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .sort-btn:hover {
+      background: #1e1e1e;
+      color: #ccc;
+      border-color: #444;
+    }
+
+    .sort-btn.active {
+      background: #f5f0e8;
+      color: #0d0d0d;
+      border-color: #f5f0e8;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Chart ── */
+    .chart {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 155px 1fr 90px;
+      align-items: center;
+      gap: 10px;
+      cursor: default;
+      border-radius: 4px;
+      padding: 3px 6px;
+      transition: background 0.15s;
+    }
+
+    .bar-row:hover { background: rgba(255,255,255,0.04); }
+    .bar-row:hover .label { color: #f5f0e8; font-weight: 600; }
+    .bar-row:hover .bar-fill { opacity: 1; }
+    .bar-row:hover .value { color: #f5f0e8; }
+
+    .label {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: #ccc;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.15s, font-weight 0.15s;
+    }
+
+    .bar-track {
+      background: #1e1e1e;
+      border-radius: 3px;
+      height: 22px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      opacity: 0.85;
+      position: relative;
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s;
+    }
+
+    .bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .value {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #999;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    /* ── Footer ── */
+    .total-box {
+      max-width: 860px;
+      margin: 2rem auto 0;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .total-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: #888;
+      letter-spacing: 0.05em;
+    }
+
+    .total-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f5f0e8;
+      letter-spacing: -0.02em;
+    }
+
+    .source {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.68rem;
+      color: #444;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>Populasi Indonesia 2025</h1>
+      <p>Jumlah Penduduk Menurut Provinsi &mdash; Proyeksi SP2020</p>
+    </header>
+
+    <div class="controls">
+      <span class="controls-label">Urutkan</span>
+      <button class="sort-btn active" data-sort="jumlah-desc">↓ Terbanyak</button>
+      <button class="sort-btn" data-sort="jumlah-asc">↑ Tersedikit</button>
+      <button class="sort-btn" data-sort="abjad-asc">↓ A → Z</button>
+      <button class="sort-btn" data-sort="abjad-desc">↑ Z → A</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>&gt; 35 juta</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>10–35 juta</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f1c40f"></div>5–10 juta</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div>2–5 juta</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2980b9"></div>&lt; 2 juta</div>
+    </div>
+
+    <div class="chart" id="chart"></div>
+
+    <div class="total-box">
+      <span class="total-label">Total Penduduk Indonesia</span>
+      <span class="total-value">284,4 Juta Jiwa</span>
+    </div>
+
+    <div class="source">Sumber: BPS — Proyeksi Penduduk Indonesia 2020–2050 (SP2020)</div>
+  </div>
+
+  <script>
+    const rawData = [
+      { provinsi: "Aceh",                   penduduk: 5626 },
+      { provinsi: "Sumatera Utara",          penduduk: 15785.8 },
+      { provinsi: "Sumatera Barat",          penduduk: 5914.3 },
+      { provinsi: "Riau",                    penduduk: 6811.2 },
+      { provinsi: "Jambi",                   penduduk: 3768.5 },
+      { provinsi: "Sumatera Selatan",        penduduk: 8928.5 },
+      { provinsi: "Bengkulu",               penduduk: 2138 },
+      { provinsi: "Lampung",                 penduduk: 9522.9 },
+      { provinsi: "Kep. Bangka Belitung",    penduduk: 1550.8 },
+      { provinsi: "Kepulauan Riau",          penduduk: 2213.5 },
+      { provinsi: "DKI Jakarta",             penduduk: 10678 },
+      { provinsi: "Jawa Barat",              penduduk: 50759 },
+      { provinsi: "Jawa Tengah",             penduduk: 38233.9 },
+      { provinsi: "DI Yogyakarta",           penduduk: 3781.5 },
+      { provinsi: "Jawa Timur",              penduduk: 42089.3 },
+      { provinsi: "Banten",                  penduduk: 12537.4 },
+      { provinsi: "Bali",                    penduduk: 4461.3 },
+      { provinsi: "NTB",                     penduduk: 5731.1 },
+      { provinsi: "NTT",                     penduduk: 5742.6 },
+      { provinsi: "Kalimantan Barat",        penduduk: 5766 },
+      { provinsi: "Kalimantan Tengah",       penduduk: 2845 },
+      { provinsi: "Kalimantan Selatan",      penduduk: 4323.3 },
+      { provinsi: "Kalimantan Timur",        penduduk: 4267.6 },
+      { provinsi: "Kalimantan Utara",        penduduk: 749.4 },
+      { provinsi: "Sulawesi Utara",          penduduk: 2721.4 },
+      { provinsi: "Sulawesi Tengah",         penduduk: 3156.1 },
+      { provinsi: "Sulawesi Selatan",        penduduk: 9563.1 },
+      { provinsi: "Sulawesi Tenggara",       penduduk: 2836.7 },
+      { provinsi: "Gorontalo",               penduduk: 1242.2 },
+      { provinsi: "Sulawesi Barat",          penduduk: 1525.3 },
+      { provinsi: "Maluku",                  penduduk: 1970.6 },
+      { provinsi: "Maluku Utara",            penduduk: 1373.8 },
+      { provinsi: "Papua Barat",             penduduk: 587.6 },
+      { provinsi: "Papua Barat Daya",        penduduk: 636.4 },
+      { provinsi: "Papua",                   penduduk: 1073.6 },
+      { provinsi: "Papua Selatan",           penduduk: 549.7 },
+      { provinsi: "Papua Tengah",            penduduk: 1492.3 },
+      { provinsi: "Papua Pegunungan",        penduduk: 1484.9 },
+    ];
+
+    const MAX = Math.max(...rawData.map(d => d.penduduk));
+    const TOTAL = 284438.8;
+
+    function getColor(value) {
+      const r = value / MAX;
+      if (r > 0.7) return "#c0392b";
+      if (r > 0.4) return "#e67e22";
+      if (r > 0.2) return "#f1c40f";
+      if (r > 0.1) return "#27ae60";
+      return "#2980b9";
+    }
+
+    function formatVal(val) {
+      if (val >= 1000) return (val / 1000).toFixed(2) + " juta";
+      return val.toFixed(1) + " ribu";
+    }
+
+    function sortData(key) {
+      return [...rawData].sort((a, b) => {
+        if (key === 'jumlah-desc') return b.penduduk - a.penduduk;
+        if (key === 'jumlah-asc')  return a.penduduk - b.penduduk;
+        if (key === 'abjad-asc')   return a.provinsi.localeCompare(b.provinsi, 'id');
+        if (key === 'abjad-desc')  return b.provinsi.localeCompare(a.provinsi, 'id');
+        return 0;
+      });
+    }
+
+    function renderChart(sortKey) {
+      const chart = document.getElementById('chart');
+      const data = sortData(sortKey);
+
+      chart.innerHTML = data.map(item => {
+        const widthPct = (item.penduduk / MAX * 100).toFixed(3);
+        const color = getColor(item.penduduk);
+        const pct = (item.penduduk / TOTAL * 100).toFixed(2);
+        const abs = formatVal(item.penduduk);
+        return `
+          <div class="bar-row"
+            data-pct="${pct}%"
+            data-abs="${abs}"
+            onmouseenter="this.querySelector('.value').textContent = this.dataset.pct"
+            onmouseleave="this.querySelector('.value').textContent = this.dataset.abs"
+          >
+            <div class="label" title="${item.provinsi}">${item.provinsi}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${widthPct}%;background:${color};"></div>
+            </div>
+            <div class="value">${abs}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // Sort button logic
+    let currentSort = 'jumlah-desc';
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSort = btn.dataset.sort;
+        renderChart(currentSort);
+      });
+    });
+
+    // Initial render
+    renderChart(currentSort);
+  </script>
+</body>
+</html>
